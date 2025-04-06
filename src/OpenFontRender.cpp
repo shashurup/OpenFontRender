@@ -490,7 +490,12 @@ uint16_t OpenFontRender::drawHString(const char *str,
                                      Align align,
                                      Drawing drawing,
                                      FT_BBox &abbox,
-                                     FT_Error &error) {
+                                     FT_Error &error,
+                                     void (*onGlyph) (unsigned pos,
+                                                      uint16_t ch,
+                                                      FT_BBox &bbox,
+                                                      void *arg),
+                                     void *arg) {
 
 	uint16_t written_char_num    = 0;
 	Cursor initial_position      = {x, y};
@@ -538,6 +543,7 @@ uint16_t OpenFontRender::drawHString(const char *str,
 		ascender   = asize->face->size->metrics.ascender;
 	}
 
+	unsigned pos = 0;
 	// Rendering loop
 	while (unicode_q.size() != 0) {
 		FT_Vector offset       = {0, 0};
@@ -559,6 +565,7 @@ uint16_t OpenFontRender::drawHString(const char *str,
 			FT_BBox glyph_bbox;
 
 			unicode = unicode_q.front();
+			++pos;
 			switch (unicode) {
 			case '\r':
 				[[fallthrough]]; // Fall Through
@@ -598,6 +605,9 @@ uint16_t OpenFontRender::drawHString(const char *str,
 				bbox.yMin = std::min(bbox.yMin, glyph_bbox.yMin);
 				bbox.xMax = std::max(bbox.xMax, glyph_bbox.xMax);
 				bbox.yMax = std::max(bbox.yMax, glyph_bbox.yMax);
+
+				if (onGlyph)
+					onGlyph(pos, unicode, glyph_bbox, arg);
 
 				x += (aglyph->advance.x >> 16);
 				rendering_unicode_q.push(unicode);

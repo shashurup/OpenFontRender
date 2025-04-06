@@ -237,7 +237,12 @@ public:
 	                     Align align,
 	                     Drawing drawing,
 	                     FT_BBox &abbox,
-	                     FT_Error &error);
+	                     FT_Error &error,
+						 void (*onGlyph) (unsigned pos,
+										  uint16_t ch,
+										  FT_BBox &bbox,
+										  void* arg) = 0,
+						 void *arg = 0);
 	FT_Error drawChar(char character,
 	                  int32_t x   = 0,
 	                  int32_t y   = 0,
@@ -330,9 +335,10 @@ public:
 		int32_t y; ///< y-coordinate
 	};
 
+	uint32_t getFontMaxHeight();
+
 private:
 	FT_Error loadFont(enum OFR::LoadFontFrom from);
-	uint32_t getFontMaxHeight();
 	void draw2screen(FT_BitmapGlyph glyph, uint32_t x, uint32_t y, uint16_t fg, uint16_t bg);
 	uint16_t decodeUTF8(uint8_t *buf, uint16_t *index, uint16_t remaining);
 	uint16_t color565(uint8_t r, uint8_t g, uint8_t b);
